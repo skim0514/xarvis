@@ -27,10 +27,11 @@ export class AppComponent implements OnInit {
     var i;
     var uri_pattern = /<img [^>]*src="[^"]*"[^>]*>/gm
     var script_pattern = /<script [^>]*src="[^"]*"[^>]*>/gm
-    var href_pattern = /<href [^>]*src="[^"]*"[^>]*>/gm
+    var href_pattern = /<link [^>]*href="[^"]*"[^>]*>/gm
     var imgs = file.match(uri_pattern).map(x => x.replace(/.*src="([^"]*)".*/, '$1'));
     var scripts = file.match(script_pattern).map(x => x.replace(/.*src="([^"]*)".*/, '$1'));
-    this.urls = imgs.concat(scripts);
+    var links = file.match(href_pattern).map(x => x.replace(/.*href="([^"]*)".*/, '$1'));
+    this.urls = imgs.concat(scripts, links);
   }
   
   
