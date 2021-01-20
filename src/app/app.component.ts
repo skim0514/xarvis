@@ -1,5 +1,9 @@
 import { Component, OnInit } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpResponse } from '@angular/common/http';
+import {DomSanitizer} from '@angular/platform-browser';
+import { FileService } from './file.service';
+
+import { Observable } from 'rxjs';
 
 @Component({
   selector: 'app-root',
@@ -8,13 +12,39 @@ import { HttpClient } from '@angular/common/http';
 })
 export class AppComponent implements OnInit {
   title = 'http-interceptor-example';
-  constructor(private http: HttpClient) {
+  totalAngularPackages;
+  htmlfile;
+  urls;
 
+  constructor(private http: HttpClient,
+    private sanitizer:DomSanitizer) {
+
+    }
+
+  html_parser(file: string) {
+    var lines = file.split('\n');
+    var num = lines.length;
+    var i;
+    var uri_pattern = /<img [^>]*src="[^"]*"[^>]*>/gm
+    var script_pattern = /<script [^>]*src="[^"]*"[^>]*>/gm
+    var href_pattern = /<href [^>]*src="[^"]*"[^>]*>/gm
+    var imgs = file.match(uri_pattern).map(x => x.replace(/.*src="([^"]*)".*/, '$1'));
+    var scripts = file.match(script_pattern).map(x => x.replace(/.*src="([^"]*)".*/, '$1'));
+    this.urls = imgs.concat(scripts);
   }
+  
+  
 
   ngOnInit(): void {
-    this.http.get('https://www.s2wlab.com/about.html')
-      .subscribe(data => {
+    this.htmlfile = this.http.get('https://www.s2wlab.com/index.html')
+
+
+    this.http.get('https://www.s2wlab.com/products.html', {responseType: 'text'})
+      .subscribe(res => {
+        this.totalAngularPackages = this.sanitizer.bypassSecurityTrustHtml(res);
+        this.htmlfile = res;
+        var re = /src/gi; 
+        this.htmlfile = this.html_parser(this.htmlfile);
         //todo
       });
     this.http.get('https://www.s2wlab.com/contact.html')
@@ -24,6 +54,6 @@ export class AppComponent implements OnInit {
     this.http.get('https://www.s2wlab.com/products.html')
       .subscribe(data => {
         //todo
-      });
+      });    
   }
 }
